@@ -1,16 +1,17 @@
 // DEPENDENCIES
+
 // Nnpm packages that we will use to give our server useful functionality
 
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-//	Create a version 1 (timestamp) UUID
-const uuidv1 = require('uuid/v1');
+
 // Tells node that we are creating an "express" server
 const app = express();
 // Sets an initial port. We"ll use this later in our listener
 const PORT = process.env.PORT || 5500;
-
+//	Create a version 1 (timestamp) UUID
+const generateUniqueId = require('generate-unique-id');
 
 // Sets up the Express app to handle data parsing
 app.use(express.urlencoded({ extended: true }));
@@ -29,7 +30,7 @@ app.get('/api/notes', (req, res) => {
     });
 })
 
-app.post('/api/notes', (req, res) => {
+app.post('/api/notes/:id', (req, res) => {
     //read file structure for data and retrieves that note and creates a new note which then display notes
     fs.readFile('db/db.json', 'utf8', function read(err, data) {
         if (err) {
@@ -37,7 +38,12 @@ app.post('/api/notes', (req, res) => {
         }
         let retrievesNotes = JSON.parse(data);
         //const will never chnage for createing a new note
-        const createNewNote = {...req.body,id:uuidv1()}
+        const uniqueId = generateUniqueId({
+            length: 10,
+            useLetters: false
+          });
+        const createNewNote = { ...req.body, id:uniqueId};
+        
         retrievesNotes.push(createNewNote);
         fs.writeFile('db/db.json', JSON.stringify(retrievesNotes), err => {
             if (err) {
@@ -56,22 +62,22 @@ app.delete('/api/notes/:id', (req, res) => {
         }
         let removesNotes = JSON.parse(data);
         let newNotes = removesNotes.filter((note) => {
+            console.log(newNotes);
             return req.params.id !== note.id;
         });
 
         fs.writeFile('db/db.json', JSON.stringify(newNotes), err => {
-            console.log(err);
             res.json({ok:true}) 
         })
     });
 })
 
-// HTML Routes
+// Basic route that sends the user first to the AJAX Page
 app.get('/notes', (req, res) => {
     res.sendFile(path.join(__dirname, './public/notes.html'));
 });
 
-// If no matching route is found default to home
+// HTML Routes
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, './public/index.html'));
 });
