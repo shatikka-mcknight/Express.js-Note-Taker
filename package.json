@@ -13,6 +13,7 @@
     "fs": "0.0.1-security",
     "generate-unique-id": "^2.0.1",
     "path": "^0.12.7",
+    "shortid": "^2.2.16",
     "uuid": "^8.3.2"
   }
 }

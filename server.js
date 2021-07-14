@@ -9,19 +9,22 @@ const fs = require('fs');
 // Tells node that we are creating an "express" server
 const app = express();
 // Sets an initial port. We"ll use this later in our listener
-const PORT = process.env.PORT || 5500;
+const PORT = process.env.PORT || 5600;
+// const uuidv4  = require('uuid');
 //	Create a version 1 (timestamp) UUID
-const generateUniqueId = require('generate-unique-id');
+const generateUniqueId = require( 'generate-unique-id');
+// const shortid = require('shortid');
 
 // Sets up the Express app to handle data parsing
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('public'));
+app.use(express.static('db'));
 
 //API Routes
 app.get('/api/notes', (req, res) => {
     //Reads the db.json structure and returns the data in that structure
-    fs.readFile('db/db.json', 'utf8', function read(err, data) {
+    fs.readFile('./db/db.json', 'utf8', function read(err, data) {
         if (err) {
             throw err;
         }
@@ -30,7 +33,8 @@ app.get('/api/notes', (req, res) => {
     });
 })
 
-app.post('/api/notes/:id', (req, res) => {
+
+app.post('/api/notes', (req, res) => {
     //read file structure for data and retrieves that note and creates a new note which then display notes
     fs.readFile('db/db.json', 'utf8', function read(err, data) {
         if (err) {
@@ -38,11 +42,11 @@ app.post('/api/notes/:id', (req, res) => {
         }
         let retrievesNotes = JSON.parse(data);
         //const will never chnage for createing a new note
-        const uniqueId = generateUniqueId({
-            length: 10,
-            useLetters: false
-          });
-        const createNewNote = { ...req.body, id:uniqueId};
+        // const id = generateUniqueId({
+        //     length: 10,
+        //     useLetters: false
+        //   });
+        const createNewNote = {id: generateUniqueId(), ...req.body }
         
         retrievesNotes.push(createNewNote);
         fs.writeFile('db/db.json', JSON.stringify(retrievesNotes), err => {
@@ -62,7 +66,7 @@ app.delete('/api/notes/:id', (req, res) => {
         }
         let removesNotes = JSON.parse(data);
         let newNotes = removesNotes.filter((note) => {
-            console.log(newNotes);
+            
             return req.params.id !== note.id;
         });
 
